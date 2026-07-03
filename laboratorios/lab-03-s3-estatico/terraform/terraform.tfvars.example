@@ -1,0 +1,3 @@
+aws_region  = "us-east-1"
+# O nome do bucket deve ser único globalmente — troque pelo seu nome
+bucket_name = "lab03-static-site-SEU-NOME"

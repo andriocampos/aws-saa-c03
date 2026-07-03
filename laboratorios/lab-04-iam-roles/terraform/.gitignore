@@ -1,0 +1,14 @@
+# Diretório de estado e cache do Terraform — nunca commitar
+.terraform/
+.terraform.lock.hcl
+
+# Arquivos de estado — contêm dados sensíveis dos recursos criados
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+
+# Arquivo de variáveis locais — pode conter valores sensíveis
+terraform.tfvars
+
+# Planos de execução
+*.tfplan

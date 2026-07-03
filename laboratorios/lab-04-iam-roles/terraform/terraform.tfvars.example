@@ -1,0 +1,3 @@
+aws_region         = "us-east-1"
+project_name       = "lab04"
+bucket_name_prefix = "lab03-static-site"
