@@ -4,9 +4,38 @@
 
 ---
 
+## Estimativa de Carga Total
+
+| Atividade | Horas estimadas |
+|-----------|----------------|
+| Curso Stephane Maarek (vídeo + pausas/repetições) | ~40h |
+| Leitura de documentação e FAQs | ~15h |
+| Laboratórios práticos | ~10h |
+| Simulados (8-10 exames completos de 65 questões) | ~18h |
+| Revisão de erros e anotações | ~15h |
+| **Total** | **~100h** |
+
+### Distribuição Semanal
+
+100h ÷ 10 semanas = **10h por semana (mínimo)**
+
+| Dia | Mínimo | Recomendado | Como usar |
+|-----|--------|-------------|-----------|
+| Segunda a Sexta | 1h30/dia | 2h/dia | Teoria + anotações |
+| Sábado | 3h | 4h | Lab prático ou simulado parcial |
+| Domingo | 2h | 3h | Revisão da semana + simulado parcial |
+| **Total semanal** | **~10h** | **~14h** | |
+
+> **Mínimo absoluto:** 1h30/dia útil + 3h no fim de semana → dá para passar, mas sem folga.
+> **Recomendado:** 2h/dia útil + 4h no fim de semana → chega nas semanas 9-10 com confiança.
+>
+> ⚠️ As semanas 07 (Segurança) e 09-10 (simulados intensivos) exigem mais tempo que as demais. Guarde energia para o sprint final.
+
+---
+
 ## Estratégia Geral
 
-- **Carga diária recomendada:** 2-3 horas nos dias de semana, 4-5 horas no fim de semana
+- **Carga diária recomendada:** 2h nos dias de semana, 3-4h no fim de semana
 - **Método:** Teoria → Prática (labs) → Revisão com simulados
 - **Meta de simulados:** 80%+ de forma consistente antes de agendar
 - **Ferramenta principal:** Tutorials Dojo (Jon Bonso) para simulados
