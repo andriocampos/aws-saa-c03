@@ -3,17 +3,17 @@
 
 ## Checklist de Estudo
 
-### IAM
-- [ ] Assistir aulas de IAM no curso (Stephane Maarek)
-- [ ] Usuários, grupos e roles
-- [ ] Policies: inline vs managed vs customer managed
-- [ ] MFA e tipos (Virtual, Hardware, U2F)
-- [ ] IAM best practices
-- [ ] Credential Report e Access Advisor
-- [ ] Access Analyzer
-- [ ] STS e AssumeRole
-- [ ] Identity-based vs Resource-based policies
-- [ ] Conditions em policies
+### IAM ✅
+- [x] Assistir aulas de IAM no curso (Stephane Maarek)
+- [x] Usuários, grupos e roles
+- [x] Policies: inline vs managed vs customer managed
+- [x] MFA e tipos (Virtual, Hardware, U2F)
+- [x] IAM best practices
+- [x] Credential Report e Access Advisor
+- [x] Access Analyzer
+- [x] STS e AssumeRole
+- [x] Identity-based vs Resource-based policies
+- [x] Conditions em policies
 
 ### EC2
 - [ ] Assistir aulas de EC2 no curso
@@ -39,7 +39,7 @@
 - [ ] Lab: `lab-04-iam-roles`
 
 ## Simulado da Semana
-- [ ] 20 questões de IAM — Tutorials Dojo
+- [x] 20 questões de IAM — Quiz interno (76% → 93%)
 - [ ] 20 questões de EC2 — Tutorials Dojo
 - [ ] Revisar todos os erros
 
@@ -47,9 +47,9 @@
 | Dia | Horas | Observações |
 |-----|-------|-------------|
 | Qui 03/07 | | |
-| Sex 04/07 | | |
-| Sáb 05/07 | | |
+| Sex 04/07 | 3h | IAM: material expandido + guia didático |
+| Sáb 05/07 | 2h | IAM: quiz (76% → 93%), material de reforço |
 | Dom 06/07 | | |
 | Seg 07/07 | | |
 | Ter 08/07 | | |
-| **Total** | | |
+| **Total** | **5h** | IAM concluído ✅ |
