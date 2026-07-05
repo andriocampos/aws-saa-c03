@@ -305,3 +305,291 @@ Leia em voz alta 3 vezes cada um:
 2. **Foque nos flashcards** da seção 5 (os ❌/✅)
 3. **Refaça o quiz em 3 dias** — meta: 90%+ (27/30)
 
+
+---
+
+## 7. SCPs — Service Control Policies (Aprofundamento)
+
+### O que é um SCP?
+
+Um SCP é uma **cerca ao redor de uma conta inteira**. Ele define o MÁXIMO que qualquer pessoa dentro daquela conta pode fazer — inclusive o root.
+
+### Analogia: Regras do Condomínio (expandida)
+
+```
+Prédio (Organization)
+├── Bloco A (OU: Produção)
+│   ├── Apto 101 (Conta Prod-1) ← regras do Bloco A se aplicam
+│   └── Apto 102 (Conta Prod-2) ← regras do Bloco A se aplicam
+├── Bloco B (OU: Desenvolvimento)
+│   └── Apto 201 (Conta Dev-1)  ← regras do Bloco B se aplicam
+└── Portaria (Management Account) ← NÃO segue regras, apenas APLICA
+
+Regra do Bloco A: "Proibido fogos de artifício" (Deny cloudtrail:Delete*)
+→ Morador do 101 com PhD em pirotecnia (AdministratorAccess)?
+   Não importa. A REGRA DO BLOCO proíbe. Ponto final.
+
+Porteiro (Management Account)?
+→ Pode fazer fogos. Regras do condomínio não se aplicam a ele.
+```
+
+### Herança de SCPs
+
+```
+                    ┌─────────────────┐
+                    │   Root OU       │
+                    │   SCP: Allow *  │ ← FullAWSAccess (padrão)
+                    └────────┬────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              ▼                             ▼
+   ┌──────────────────┐         ┌──────────────────┐
+   │  OU: Produção    │         │  OU: Dev         │
+   │  SCP: Deny       │         │  SCP: Deny       │
+   │  ec2:Terminate*  │         │  organizations:  │
+   │  em prod         │         │  LeaveOrg        │
+   └────────┬─────────┘         └────────┬─────────┘
+            │                             │
+            ▼                             ▼
+   ┌──────────────────┐         ┌──────────────────┐
+   │  Conta Prod-1    │         │  Conta Dev-1     │
+   │                  │         │                  │
+   │  EFETIVO:        │         │  EFETIVO:        │
+   │  Tudo EXCETO     │         │  Tudo EXCETO     │
+   │  ec2:Terminate   │         │  LeaveOrg        │
+   └──────────────────┘         └──────────────────┘
+
+A conta herda SCPs de TODAS as OUs acima dela (intersecção).
+```
+
+### Pontos que CAEM na prova
+
+| Afirmação | Verdadeiro? |
+|-----------|:-----------:|
+| SCP afeta a Management Account | ❌ NUNCA |
+| SCP afeta o root de contas-membro | ✅ SIM |
+| SCP concede permissões | ❌ Apenas restringe |
+| SCP afeta service-linked roles | ❌ NÃO afeta |
+| SCP precisa de Allow para funcionar | ✅ Se remover o FullAWSAccess padrão, nada funciona |
+| SCP é avaliado ANTES da identity policy | ✅ Se SCP nega, identity Allow não salva |
+
+### Estratégia Deny List (mais comum — 90% dos casos)
+
+**Como funciona:** Mantém o `FullAWSAccess` (Allow *) e adiciona Denys específicos.
+
+```json
+// SCP 1 — já existe por padrão
+{
+  "Effect": "Allow",
+  "Action": "*",
+  "Resource": "*"
+}
+
+// SCP 2 — você adiciona
+{
+  "Effect": "Deny",
+  "Action": [
+    "cloudtrail:StopLogging",
+    "cloudtrail:DeleteTrail",
+    "config:StopConfigurationRecorder"
+  ],
+  "Resource": "*"
+}
+```
+
+**Resultado:** Pode tudo, EXCETO desligar CloudTrail e Config.
+
+### Estratégia Allow List (raro — ambientes ultra-restritivos)
+
+**Como funciona:** REMOVE o `FullAWSAccess` e só permite serviços específicos.
+
+```json
+// Remove o FullAWSAccess padrão e coloca:
+{
+  "Effect": "Allow",
+  "Action": [
+    "ec2:*",
+    "s3:*",
+    "rds:*",
+    "cloudwatch:*"
+  ],
+  "Resource": "*"
+}
+```
+
+**Resultado:** Só pode usar EC2, S3, RDS e CloudWatch. TODO o resto está bloqueado.
+
+### SCP para restringir regiões (exemplo clássico da prova)
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Deny",
+      "NotAction": [
+        "iam:*",
+        "organizations:*",
+        "support:*",
+        "sts:*",
+        "budgets:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": ["us-east-1", "eu-west-1"]
+        }
+      }
+    }
+  ]
+}
+```
+
+**Tradução linha por linha:**
+- `Deny` → bloqueia
+- `NotAction: iam, organizations, sts...` → EXCETO esses serviços globais (precisam funcionar em qualquer região)
+- `Condition: StringNotEquals: us-east-1, eu-west-1` → quando a região NÃO for us-east-1 ou eu-west-1
+
+**Resultado:** Ninguém na conta pode criar recursos fora de us-east-1 e eu-west-1, mas IAM/STS/Organizations continuam funcionando (são globais).
+
+> ⚠️ `NotAction` é a chave aqui. Se usasse `Action: "*"` com Deny, bloquearia até IAM e STS, quebrando tudo.
+
+---
+
+## 8. ABAC — Attribute-Based Access Control (Aprofundamento)
+
+### O que é?
+
+ABAC é uma forma de controlar acesso usando **tags** em vez de listar ARNs explícitos.
+
+### Analogia: Pulseiras em Festival
+
+```
+RBAC (tradicional — por cargo):
+  "Segurança pode acessar backstage, camarins e palco"
+  "Público pode acessar área geral"
+  → Cada novo espaço precisa atualizar a regra de cada grupo
+
+ABAC (por atributo — por pulseira):
+  "Pulseira VERMELHA acessa qualquer área com tag cor=vermelho"
+  "Pulseira AZUL acessa qualquer área com tag cor=azul"
+  → Criou área nova com tag cor=vermelho? Quem tem pulseira vermelha já entra!
+```
+
+### RBAC vs ABAC
+
+| Aspecto | RBAC (Role-Based) | ABAC (Attribute-Based) |
+|---------|:--:|:--:|
+| **Como define acesso** | Por ARN do recurso | Por tag do recurso + tag do principal |
+| **Criar recurso novo** | Atualizar policy manualmente | Já funciona se tag estiver correta |
+| **Escalabilidade** | Mais policies conforme cresce | Mesma policy serve para tudo |
+| **Granularidade** | Por recurso individual | Por atributo/grupo lógico |
+| **Complexidade** | Simples de entender | Precisa disciplina de tagging |
+
+### Como funciona na prática
+
+**Cenário:** 3 times (backend, frontend, data) com EC2 instances cada. Cada time só deve acessar SUAS instâncias.
+
+**Sem ABAC (3 policies diferentes):**
+```json
+// Policy do time backend
+{"Action": "ec2:*", "Resource": "arn:aws:ec2:*:*:instance/i-backend1"}
+// Policy do time frontend
+{"Action": "ec2:*", "Resource": "arn:aws:ec2:*:*:instance/i-frontend1"}
+// Policy do time data
+{"Action": "ec2:*", "Resource": "arn:aws:ec2:*:*:instance/i-data1"}
+```
+→ Cada nova instância = atualizar policy. 100 instâncias = 100 ARNs. Pesadelo.
+
+**Com ABAC (1 policy para TODOS):**
+```json
+{
+  "Effect": "Allow",
+  "Action": "ec2:*",
+  "Resource": "*",
+  "Condition": {
+    "StringEquals": {
+      "ec2:ResourceTag/Team": "${aws:PrincipalTag/Team}"
+    }
+  }
+}
+```
+→ **UMA policy.** Serve para backend, frontend, data, e qualquer time futuro!
+
+**Como funciona:**
+```
+User "João" tem tag Team=backend
+Instance "i-abc" tem tag Team=backend
+→ João acessa i-abc? ✅ SIM (tags combinam)
+
+Instance "i-xyz" tem tag Team=frontend
+→ João acessa i-xyz? ❌ NÃO (tags não combinam)
+```
+
+### Tags usadas no ABAC
+
+| Condition Key | Onde a tag está | Exemplo |
+|---------------|:---:|---------|
+| `aws:PrincipalTag/Team` | No User ou Role | Tag do "quem está pedindo" |
+| `ec2:ResourceTag/Team` | Na instância EC2 | Tag do "recurso sendo acessado" |
+| `s3:ResourceTag/Project` | No bucket/objeto S3 | Tag do recurso S3 |
+| `aws:RequestTag/Team` | Na requisição (ao criar recurso) | Tag sendo aplicada agora |
+| `aws:TagKeys` | Na requisição | Quais chaves de tag estão sendo passadas |
+
+### Exemplo completo: ABAC com proteção de tags
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowActionsOnOwnResources",
+      "Effect": "Allow",
+      "Action": ["ec2:StartInstances", "ec2:StopInstances", "ec2:RebootInstances"],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "ec2:ResourceTag/Team": "${aws:PrincipalTag/Team}"
+        }
+      }
+    },
+    {
+      "Sid": "DenyTagModification",
+      "Effect": "Deny",
+      "Action": ["ec2:CreateTags", "ec2:DeleteTags"],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Team": "${aws:PrincipalTag/Team}"
+        }
+      }
+    }
+  ]
+}
+```
+
+**O que faz:**
+1. Permite start/stop/reboot APENAS em instances com mesma tag Team
+2. IMPEDE que o próprio user mude a tag Team (senão ele poderia "se promover")
+
+### Quando usar ABAC na prova
+
+| Cenário | ABAC é a resposta? |
+|---------|:--:|
+| "Múltiplos times precisam acessar apenas seus próprios recursos" | ✅ |
+| "Escalar permissões sem atualizar policies a cada novo recurso" | ✅ |
+| "Controle de acesso baseado em projeto/departamento/ambiente" | ✅ |
+| "Um user específico precisa acessar um bucket específico" | ❌ (RBAC é mais simples) |
+| "Todos os devs precisam de read-only em tudo" | ❌ (RBAC — um group com policy) |
+
+### Pré-requisitos para ABAC funcionar
+
+1. **Tags nos principals** — Users/Roles devem ter tags (ex: `Team=backend`)
+2. **Tags nos recursos** — EC2, S3, RDS etc. devem ter tags correspondentes
+3. **Policy com Condition** — Comparar `PrincipalTag` com `ResourceTag`
+4. **Proteção de tags** — Impedir que users mudem suas próprias tags (senão escapam do controle)
+
+### Vantagem principal (memorize para a prova)
+
+> ABAC **escala sem atualizar policies**. Criou recurso novo com tag correta? Acesso já funciona automaticamente. Criou time novo com tag? Mesma policy serve.
+
