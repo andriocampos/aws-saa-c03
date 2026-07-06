@@ -822,6 +822,34 @@ VPC Route Table (com propagation habilitado):
 
 > ⚠️ **Na prova:** "Conexão rápida e criptografada com on-premises" → **Site-to-Site VPN**. "Múltiplos escritórios conectados via AWS" → **VPN CloudHub**. "Mais bandwidth que 1.25 Gbps na VPN" → **TGW + ECMP**.
 
+### AWS Client VPN
+
+> Permite que **usuários individuais** (laptops, celulares) se conectem à VPC via OpenVPN.
+
+```
+┌──────────────┐        OpenVPN (TLS)       ┌────────────────────────┐
+│  Laptop do   │ ──────────────────────────► │  Client VPN Endpoint   │
+│  funcionário │                             │  (ENI na subnet)       │
+└──────────────┘                             │                        │
+                                             │  → acessa VPC          │
+                                             │  → acessa on-premises  │
+                                             │    (via Site-to-Site)   │
+                                             └────────────────────────┘
+```
+
+| Aspecto | Site-to-Site VPN | Client VPN |
+|---------|:----------------:|:----------:|
+| **Conecta** | Rede inteira (data center) | Usuário individual (laptop) |
+| **Equipamento** | Customer Gateway (router/firewall) | Software OpenVPN no laptop |
+| **Protocolo** | IPSec | TLS (OpenVPN) |
+| **Caso de uso** | Conectar data center à VPC | Home office, acesso remoto |
+| **Autenticação** | Pre-shared key ou certificado | AD, SAML, certificados mútuos |
+| **Billing** | Por hora + tráfego | Por hora + por conexão ativa |
+
+**Quando usar na prova:**
+- "Funcionários remotos precisam acessar recursos na VPC" → **Client VPN**
+- "Data center precisa de conexão permanente à VPC" → **Site-to-Site VPN**
+
 ---
 
 ## 11. Direct Connect (DX)
@@ -1357,7 +1385,127 @@ Route Tables:
 
 ---
 
-## 18. Palavras-chave da Prova SAA-C03
+## 18. VPC Traffic Mirroring
+
+> Permite **copiar tráfego de rede** de ENIs para destinos de análise (segurança, troubleshooting).
+
+### Como funciona
+
+```
+┌──────────────┐                    ┌──────────────────────────┐
+│  EC2 (ENI)   │ ── mirror copy ──► │  Destino:                │
+│  (source)    │                    │  - ENI de outro EC2      │
+└──────────────┘                    │  - NLB (fleet de IDS)    │
+                                    │  - Gateway LB (appliance)│
+                                    └──────────────────────────┘
+```
+
+### Características
+
+- Captura tráfego de **entrada, saída ou ambos**
+- Source e target podem estar em **contas ou VPCs diferentes** (com VPC Peering)
+- Filtra por protocolo, porta, CIDR (mirror filter)
+- Não afeta performance da instância source
+- Casos de uso: **IDS/IPS, análise de ameaças, troubleshooting de rede, compliance**
+
+### Na prova
+
+| Cenário | Resposta |
+|---------|----------|
+| "Inspecionar tráfego de rede para detecção de intrusão" | Traffic Mirroring → NLB → fleet de IDS |
+| "Copiar pacotes de rede para análise sem afetar a aplicação" | Traffic Mirroring |
+| "Compliance requer captura de todo tráfego de rede" | Traffic Mirroring |
+
+> ⚠️ Traffic Mirroring ≠ VPC Flow Logs. Flow Logs = **metadados** (src/dst IP, porta, aceito/rejeitado). Traffic Mirroring = **pacotes completos** (conteúdo).
+
+---
+
+## 19. Networking Costs in AWS
+
+> Entender custos de rede é essencial para questões de "solução mais econômica" na prova.
+
+### Regras de custo de tráfego
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  GRATUITO:                                                      │
+│  • Tráfego de ENTRADA (ingress) da internet → AWS               │
+│  • Tráfego entre instâncias na MESMA AZ usando IP privado       │
+│                                                                 │
+│  COBRA ($0.01/GB):                                              │
+│  • Tráfego entre AZs na MESMA região (inter-AZ)                │
+│  • Tráfego usando IP público/Elastic IP (mesmo na mesma AZ!)   │
+│                                                                 │
+│  COBRA ($0.02/GB):                                              │
+│  • Tráfego entre regiões (inter-region)                         │
+│                                                                 │
+│  COBRA (variável):                                              │
+│  • Tráfego de SAÍDA (egress) da AWS → internet                  │
+│  • NAT Gateway: $0.045/GB processado + hora                     │
+│  • VPC Endpoints Interface: $0.01/GB processado + hora          │
+│  • Transit Gateway: $0.02/GB processado                         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Diagrama de custos
+
+```
+                    Internet
+                       │
+                       │ Ingress: GRÁTIS
+                       │ Egress: $0.09/GB (primeiros 10TB)
+                       ▼
+              ┌─────────────────┐
+              │   AWS Region    │
+              │                 │
+              │  AZ-a    AZ-b  │
+              │  ┌──┐    ┌──┐  │
+              │  │EC2│◄──►│EC2│ │  Inter-AZ: $0.01/GB (cada direção)
+              │  └──┘    └──┘  │
+              │   │             │
+              │   │ Mesma AZ    │
+              │   │ IP privado  │
+              │   ▼ = GRÁTIS    │
+              │  ┌──┐           │
+              │  │RDS│          │
+              │  └──┘           │
+              └─────────────────┘
+                       │
+                       │ Inter-region: $0.02/GB
+                       ▼
+              ┌─────────────────┐
+              │  Outra Region   │
+              └─────────────────┘
+```
+
+### Otimizações de custo (cai na prova!)
+
+| Cenário | Otimização |
+|---------|-----------|
+| EC2 acessando S3 na mesma região | **VPC Gateway Endpoint** (gratuito!) |
+| EC2 acessando DynamoDB | **VPC Gateway Endpoint** (gratuito!) |
+| Alta transferência entre AZs | Colocar recursos na **mesma AZ** (trade-off: menos HA) |
+| Reduzir custo de egress para usuários globais | **CloudFront** (preço de egress menor que EC2 direto) |
+| EC2 se comunicando na mesma AZ | Usar **IP privado** (público cobra mesmo intra-AZ) |
+| Muita transferência para S3 de longe | **S3 Transfer Acceleration** ou **Snow Family** |
+
+### Comparativo de custos de conectividade
+
+| Serviço | Custo hora | Custo por GB | Quando usar |
+|---------|:----------:|:------------:|-------------|
+| NAT Gateway | $0.045/h | $0.045/GB | Subnets privadas → internet |
+| VPC Endpoint Interface | $0.01/h | $0.01/GB | Acesso privado a serviços AWS |
+| VPC Endpoint Gateway | **Gratuito** | **Gratuito** | S3 e DynamoDB (sempre usar!) |
+| Transit Gateway | — | $0.02/GB | Hub de múltiplas VPCs |
+| VPC Peering | — | Inter-AZ: $0.01/GB | Conexão direta entre 2 VPCs |
+
+> 🎯 **Regra de ouro na prova:** "Qual a forma MAIS ECONÔMICA de acessar S3 de uma subnet privada?" → **VPC Gateway Endpoint** (gratuito, sem NAT Gateway).
+
+---
+
+## 20. Palavras-chave da Prova SAA-C03
 
 | Cenário na prova | Resposta |
 |-----------------|----------|
@@ -1387,10 +1535,15 @@ Route Tables:
 | "EC2 em VPC precisa acessar serviço em outra VPC sem peering" | PrivateLink (Interface Endpoint para Endpoint Service) |
 | "Reduzir custo de transferência entre AZs" | NAT Gateway na mesma AZ que as instâncias |
 | "Resolver DNS de VPC peered" | Habilitar DNS resolution no peering |
+| "Funcionários remotos/home office acessar VPC" | AWS Client VPN (OpenVPN) |
+| "Inspecionar pacotes completos de rede (IDS/IPS)" | VPC Traffic Mirroring |
+| "Forma mais barata de acessar S3 de subnet privada" | VPC Gateway Endpoint (gratuito) |
+| "Reduzir custo de egress para usuários globais" | CloudFront (egress mais barato que EC2 direto) |
+| "Tráfego entre instâncias na mesma AZ sem custo" | Usar IP privado (IP público cobra mesmo intra-AZ) |
 
 ---
 
-## 19. Resumo Visual — Conectividade VPC
+## 21. Resumo Visual — Conectividade VPC
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
