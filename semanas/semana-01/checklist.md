@@ -15,20 +15,20 @@
 - [x] Identity-based vs Resource-based policies
 - [x] Conditions em policies
 
-### EC2
-- [ ] Assistir aulas de EC2 no curso
-- [ ] Tipos de instância (C, R, M, T, I, G) e casos de uso
-- [ ] On-Demand, Reserved, Spot, Savings Plans, Dedicated
-- [ ] AMIs: criação, cópia entre regiões
-- [ ] EBS: gp2 vs gp3, io1 vs io2, st1, sc1
-- [ ] Instance Store vs EBS
-- [ ] EBS Multi-Attach e Encryption
-- [ ] Snapshots e AMIs a partir de snapshots
-- [ ] Security Groups: stateful, regras de entrada/saída
-- [ ] Elastic IP e limitações
-- [ ] User Data e EC2 Instance Metadata
-- [ ] Placement Groups (Cluster, Spread, Partition)
-- [ ] Hibernate
+### EC2 ✅
+- [x] Assistir aulas de EC2 no curso
+- [x] Tipos de instância (C, R, M, T, I, G) e casos de uso
+- [x] On-Demand, Reserved, Spot, Savings Plans, Dedicated
+- [x] AMIs: criação, cópia entre regiões
+- [x] EBS: gp2 vs gp3, io1 vs io2, st1, sc1
+- [x] Instance Store vs EBS
+- [x] EBS Multi-Attach e Encryption
+- [x] Snapshots e AMIs a partir de snapshots
+- [x] Security Groups: stateful, regras de entrada/saída
+- [x] Elastic IP e limitações
+- [x] User Data e EC2 Instance Metadata
+- [x] Placement Groups (Cluster, Spread, Partition)
+- [x] Hibernate
 
 ### Prática
 - [ ] Criar usuário IAM com MFA
@@ -40,8 +40,8 @@
 
 ## Simulado da Semana
 - [x] 20 questões de IAM — Quiz interno (76% → 93%)
-- [ ] 20 questões de EC2 — Tutorials Dojo
-- [ ] Revisar todos os erros
+- [x] 20 questões de EC2 — Quiz interno (93%)
+- [x] Revisar todos os erros
 
 ## Horas Estudadas
 | Dia | Horas | Observações |
@@ -49,7 +49,7 @@
 | Qui 03/07 | | |
 | Sex 04/07 | 3h | IAM: material expandido + guia didático |
 | Sáb 05/07 | 2h | IAM: quiz (76% → 93%), material de reforço |
-| Dom 06/07 | | |
+| Dom 06/07 | 3h | EC2: leitura material + quiz (93%) |
 | Seg 07/07 | | |
 | Ter 08/07 | | |
-| **Total** | **5h** | IAM concluído ✅ |
+| **Total** | **8h** | Semana 01 concluída ✅ (IAM + EC2) |

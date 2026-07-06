@@ -32,9 +32,31 @@
 
 ---
 
-## EC2 — Em andamento 🔄
+## EC2 ✅ (concluído em 06/07)
 
-### Próximos passos
-- Ler material expandido: `servicos/ec2.md`
-- Estudar famílias de instância, opções de compra, EBS
-- Fazer quiz de EC2 quando terminar
+### Resultados do simulado
+| Tentativa | Score | Data |
+|-----------|:-----:|------|
+| Quiz EC2 (30 questões) | 93% | 06/07 |
+
+### Erros (apenas 2)
+- ENI vs ENA vs EFA: confundi com Direct Connect/VPN. Correto: ENI=NIC virtual, ENA=100Gbps, EFA=HPC OS-bypass
+- io2 Block Express vs io2 standard: não sabia o limite. io2 standard=64K IOPS, Block Express=256K IOPS
+
+### Conceitos dominados
+- Famílias de instância (P/G=GPU, C=compute, R=memory, T=burstable, M=general)
+- Opções de compra (RI Standard vs Convertible, Spot Fleet, Savings Plans)
+- EBS completo (gp2 vs gp3, io2, st1/sc1, Multi-Attach, snapshots)
+- Instance Store (efêmero, milhões IOPS)
+- Placement Groups (Cluster=HPC, Spread=HA max 7/AZ, Partition=big data)
+- Hibernate (RAM em EBS criptografado, max 150GB, max 60 dias)
+- Security Groups (stateful), Elastic IP (5/região), User Data (root, 1º boot)
+- Golden AMI, AMI cross-region copy
+- T3 burst credits + unlimited mode
+- Billing (stopped = cobra EBS + EIP não associado)
+
+---
+
+## Semana 01 — CONCLUÍDA ✅
+
+Próximo: Semana 02 (VPC + S3)
