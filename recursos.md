@@ -15,22 +15,55 @@
 
 ## Simulados
 
-### Tutorials Dojo — Jon Bonso (PRINCIPAL)
-- **Plataforma:** Portal Tutorials Dojo ou Udemy
-- **Link:** https://tutorialsdojo.com/aws-certified-solutions-architect-associate/
-- **Por que usar:** Os simulados mais próximos da prova real. Explicações detalhadas de cada resposta.
-- **Modo de uso:** Fazer no modo "timed exam" (65 questões, 130 min). Revisar TODOS os erros.
-- **Meta:** 80%+ de forma consistente antes de agendar a prova
+### Tabela Comparativa
 
-### AWS Skill Builder — Official Practice Exam
-- **Link:** https://skillbuilder.aws/
-- **Por que usar:** Simulado oficial da AWS com 20 questões. Usar como termômetro final.
-- **Disponível gratuitamente** com login AWS
+| Plataforma | Preço | Qualidade | Observação |
+|------------|:-----:|:---------:|------------|
+| Tutorials Dojo | ~$15 | ⭐⭐⭐⭐⭐ | Mais próximo da prova real, melhor custo-benefício |
+| Whizlabs | ~$20 | ⭐⭐⭐⭐ | Bom volume (600+ questões), explicações detalhadas |
+| Neal Davis (Digital Cloud Training) | ~$20 | ⭐⭐⭐⭐ | Questões bem escritas, cheat sheets inclusos |
+| Stephane Maarek (Udemy) | ~$15 | ⭐⭐⭐⭐ | Complementa o curso dele, 300+ questões |
+| AWS Skill Builder | Gratuito | ⭐⭐⭐ | Simulado oficial da AWS (20 questões grátis) |
+| ExamTopics | Gratuito | ⭐⭐ | Banco da comunidade — cuidado com respostas erradas |
 
-### Examtopics
-- **Link:** https://www.examtopics.com/exams/amazon/aws-certified-solutions-architect-associate-saa-c03/
-- **Por que usar:** Banco de questões extenso. Usar com cuidado — algumas respostas estão erradas.
-- **Dica:** Ler a discussão de cada questão para confirmar a resposta correta.
+### Links
+
+- **Tutorials Dojo (Udemy):** https://www.udemy.com/course/aws-certified-solutions-architect-associate-amazon-practice-exams-saa-c03/
+- **Tutorials Dojo (Portal):** https://portal.tutorialsdojo.com/courses/aws-certified-solutions-architect-associate-practice-exams/
+- **Whizlabs:** https://www.whizlabs.com/aws-solutions-architect-associate/
+- **Neal Davis (Udemy):** https://www.udemy.com/course/aws-certified-solutions-architect-associate-practice-tests-k/
+- **Stephane Maarek (Udemy):** https://www.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate/
+- **AWS Skill Builder (oficial gratuito):** https://explore.skillbuilder.aws/learn/course/external/view/elearning/13266/aws-certified-solutions-architect-associate-official-practice-question-set
+- **ExamTopics:** https://www.examtopics.com/exams/amazon/aws-certified-solutions-architect-associate-saa-c03/
+
+### Recomendação por Fase
+
+```
+AGORA (aprendendo — semanas 1-8):
+  → Nossos quizzes por tópico (simulados/quiz-*.py)
+  → AWS Skill Builder (grátis, oficial — como termômetro)
+
+SEMANA 9-10 (simulados full — 65 questões cronometradas):
+  → Tutorials Dojo (6 exams x 65 questões = 390 questões) — OBRIGATÓRIO
+  → Stephane Maarek Practice Exams (se já faz o curso dele)
+
+SE QUISER MAIS:
+  → Whizlabs ou Neal Davis como terceira fonte
+```
+
+### O que Evitar
+
+- **ExamTopics** — muitas respostas erradas nos comentários, confunde mais do que ajuda
+- **Brain dumps** — questões vazadas são antiéticas e frequentemente desatualizadas
+- **Simulados genéricos** — se não menciona "SAA-C03" especificamente, pode ser da versão antiga (C02)
+
+### Meta nos Simulados
+
+| Fase | Meta | Ação |
+|------|:----:|------|
+| Primeiros simulados | 65-70% | Normal — identificar gaps |
+| Após reforço | 75-80% | Revisar erros e refazer |
+| Pré-prova | 80%+ consistente | Pode agendar a prova |
 
 ---
 
