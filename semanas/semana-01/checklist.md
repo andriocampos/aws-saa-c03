@@ -30,13 +30,13 @@
 - [x] Placement Groups (Cluster, Spread, Partition)
 - [x] Hibernate
 
-### Prática
-- [ ] Criar usuário IAM com MFA
-- [ ] Criar role com política customizada
-- [ ] Lançar instância EC2 t2.micro
-- [ ] Criar e anexar volume EBS
-- [ ] Criar snapshot de EBS
-- [ ] Lab: `lab-04-iam-roles`
+### Prática ✅
+- [x] Criar usuário IAM com MFA
+- [x] Criar role com política customizada
+- [x] Lançar instância EC2 t2.micro
+- [x] Criar e anexar volume EBS
+- [x] Criar snapshot de EBS
+- [x] Lab: `lab-04-iam-roles`
 
 ## Simulado da Semana
 - [x] 20 questões de IAM — Quiz interno (76% → 93%)
