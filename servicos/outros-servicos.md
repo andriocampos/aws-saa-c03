@@ -745,3 +745,151 @@ Outros Serviços AWS (SAA-C03)
 ---
 
 *Última atualização: Julho 2026*
+
+---
+
+## 17. RAID com EBS
+
+> Combinar múltiplos volumes EBS para performance ou redundância.
+
+### Tipos de RAID relevantes para a prova
+
+| Tipo | Objetivo | Como funciona | Quando usar |
+|------|----------|---------------|-------------|
+| **RAID 0** | Performance (striping) | Dados divididos entre volumes (soma IOPS e throughput) | Máximo de I/O, tolera perda de dados (cache, scratch) |
+| **RAID 1** | Redundância (mirroring) | Dados copiados em ambos volumes | Alta durabilidade, menos I/O que RAID 0 |
+
+### RAID 0 — Performance
+
+```
+┌─────────┐   ┌─────────┐
+│ EBS 1   │   │ EBS 2   │
+│ (gp3)   │   │ (gp3)   │
+│ 3000    │ + │ 3000    │ = 6000 IOPS total
+│ IOPS    │   │ IOPS    │
+└────┬────┘   └────┬────┘
+     │             │
+     └──────┬──────┘
+            │ Striping
+     ┌──────┴──────┐
+     │  EC2 vê 1   │
+     │  volume de  │
+     │  6000 IOPS  │
+     └─────────────┘
+```
+
+- ✅ Soma IOPS e throughput de todos os volumes
+- ❌ Se 1 volume falha, TODOS os dados são perdidos
+- Use case: aplicações que precisam de mais de 64.000 IOPS (io2) ou 16.000 IOPS (gp3)
+
+### RAID 1 — Redundância
+
+- Dados escritos em ambos volumes simultaneamente
+- Se 1 volume falha, o outro continua
+- ❌ Não aumenta IOPS (overhead de write duplicado)
+- Use case: dados críticos que precisam de redundância extra além do EBS built-in
+
+> ⚠️ **Na prova:** "Preciso de mais de 16.000 IOPS em gp3" → RAID 0 (ou migrar para io2/io2 Block Express). AWS NÃO recomenda RAID 5 ou RAID 6 em EBS.
+
+---
+
+## 18. AWS Local Zones e Wavelength
+
+### Local Zones
+
+> Extensões de regiões AWS colocadas **perto de grandes centros populacionais** para latência <10ms.
+
+| Aspecto | Região normal | Local Zone |
+|---------|:---:|:---:|
+| Latência | ~20-50ms | <10ms |
+| Serviços | Todos | EC2, EBS, ECS, EKS, VPC (subset) |
+| Caso de uso | Maioria das apps | Gaming, streaming, media rendering |
+| Preço | Padrão | Levemente mais caro |
+
+**Como usar:** Estender sua VPC para a Local Zone criando uma subnet na LZ.
+
+### Wavelength Zones
+
+> Infraestrutura AWS embarcada em **edge do 5G** das operadoras de telecom.
+
+| Aspecto | Wavelength |
+|---------|-----------|
+| Latência | <5ms (ultra-low via 5G) |
+| Caso de uso | IoT mobile, AR/VR, gaming mobile, connected vehicles |
+| Operadoras | Verizon, Vodafone, KDDI, SKT |
+| Serviços | EC2, EBS, VPC |
+
+### Na prova
+
+| Cenário | Resposta |
+|---------|----------|
+| "Latência single-digit ms para usuários em cidade grande" | **Local Zone** |
+| "Latência ultra-baixa para dispositivos 5G/mobile" | **Wavelength Zone** |
+| "Infraestrutura AWS no data center do cliente" | **Outposts** |
+| "Aplicação precisa estar em uma região específica por compliance" | **Região padrão** |
+
+---
+
+## 19. Shared Responsibility Model
+
+> Define o que a **AWS é responsável** vs o que o **cliente é responsável**.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                 RESPONSABILIDADE DO CLIENTE                      │
+│         "Security IN the Cloud"                                 │
+│                                                                 │
+│  • Dados do cliente (criptografia, backup)                      │
+│  • IAM (users, policies, MFA)                                   │
+│  • Configuração de OS (patching de EC2)                         │
+│  • Configuração de rede (SG, NACL)                              │
+│  • Configuração de firewall                                     │
+│  • Criptografia client-side e server-side                       │
+│  • Proteção de tráfego (VPN, TLS)                               │
+├─────────────────────────────────────────────────────────────────┤
+│                 RESPONSABILIDADE DA AWS                          │
+│         "Security OF the Cloud"                                 │
+│                                                                 │
+│  • Infraestrutura física (data centers, hardware)               │
+│  • Rede global (regiões, AZs, edge locations)                   │
+│  • Hypervisor e virtualização                                   │
+│  • Patching do hardware e infra de rede                         │
+│  • Managed services infra (RDS OS patching, Lambda runtime)     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Varia por serviço
+
+| Serviço | AWS faz | Cliente faz |
+|---------|---------|-------------|
+| EC2 | Hardware, hypervisor | Patching OS, SG, IAM, dados |
+| RDS | Hardware, OS patching, engine patching | SG, IAM, dados, criptografia |
+| Lambda | Tudo infra + runtime | Código, IAM, dados |
+| S3 | Infra, durabilidade (11 noves) | Bucket policies, encryption, versioning |
+
+> 📝 **Regra:** Quanto mais "managed" o serviço, mais a AWS assume. EC2 = cliente faz quase tudo. Lambda = cliente só faz código + IAM.
+
+---
+
+## 20. Serviços Legados (menção rápida)
+
+### SWF — Simple Workflow Service
+
+- **Status:** Legado — substituído por **Step Functions**
+- O que faz: coordena tarefas distribuídas com garantia de execução
+- Se aparecer na prova: a resposta provavelmente é "migrar para Step Functions"
+
+### Elastic Transcoder
+
+- **Status:** Legado — substituído por **AWS Elemental MediaConvert**
+- O que faz: transcodificar vídeo (converter formatos, resoluções)
+- Se aparecer na prova: a resposta provavelmente é "usar MediaConvert"
+
+| Legado | Substituto moderno |
+|--------|-------------------|
+| SWF | Step Functions |
+| Elastic Transcoder | MediaConvert |
+| NAT Instance | NAT Gateway |
+| CLB (Classic Load Balancer) | ALB ou NLB |
+| Launch Configuration | Launch Template |
+
