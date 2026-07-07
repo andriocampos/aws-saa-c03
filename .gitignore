@@ -1,0 +1,10 @@
+# Material de cursos (copyright - não subir)
+curso-maarek/
+curso-iacono/
+
+# Sessões de chat (grandes, desnecessários no repo)
+docs/sessao-*.json
+
+# OS
+.DS_Store
+Thumbs.db
